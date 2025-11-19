@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<h2>Meie mõlema graafik</h2>
+<canvas id="coupleChart"></canvas>
+<script>
+  const labels = {{ labels | tojson }};
+  const series = {{ series | tojson }};
+
+  const datasets = Object.keys(series).map((name, idx) => ({
+    label: name,
+    data: series[name],
+    tension: 0.3
+  }));
+
+  const ctx = document.getElementById('coupleChart');
+  new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets },
+    options: { scales: { y: { suggestedMin: 0, suggestedMax: 10 } } }
+  });
+</script>
+{% endblock %}

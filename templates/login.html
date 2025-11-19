@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Logi sisse</h2>
+<form method="post">
+  <div>
+    <label>Kasutaja (slug)</label><br>
+    <input name="slug" placeholder="mina või tema" required>
+  </div>
+  <div>
+    <label>Parool</label><br>
+    <input type="password" name="password" required>
+  </div>
+  <button type="submit">Logi sisse</button>
+</form>
+
+<p>Kui tegid <code>flask init-db</code>, siis proovi:</p>
+<ul>
+  <li>Slug: <code>mina</code>, parool: <code>parool2</code></li>
+  <li>Slug: <code>tema</code>, parool: <code>parool1</code></li>
+</ul>
+{% endblock %}

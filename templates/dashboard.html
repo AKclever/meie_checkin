@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<h2>Tere, {{ user.name }}</h2>
+
+<h3>Skoori graafik (esimene skaalaküsimus)</h3>
+<canvas id="scoreChart"></canvas>
+<script>
+  const labels = {{ chart_labels | tojson }};
+  const values = {{ chart_values | tojson }};
+
+  const ctx = document.getElementById('scoreChart');
+  if (labels.length > 0) {
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: '{{ scale_question.text if scale_question else "Skoor" }}',
+          data: values,
+          tension: 0.3
+        }]
+      },
+      options: {
+        scales: { y: { suggestedMin: 0, suggestedMax: 10 } }
+      }
+    });
+  }
+</script>
+
+<h3>Varasemad nädalad</h3>
+<table>
+  <tr>
+    <th>Nädala algus</th>
+    <th>Vastuste arv</th>
+  </tr>
+  {% for ch in checkins %}
+    <tr>
+      <td>{{ ch.week_start }}</td>
+      <td>{{ ch.answers|length }}</td>
+    </tr>
+  {% endfor %}
+</table>
+{% endblock %}
