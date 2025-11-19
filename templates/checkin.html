@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Nädala check-in ({{ week_start }}) – {{ user.name }}</h2>
+
+{% if already_done %}
+  <p>Oled selle nädala check-in'i juba teinud ❤️</p>
+  <p><a href="{{ url_for('dashboard') }}">Tagasi ülevaatesse</a></p>
+{% else %}
+  <form method="post">
+    {% for q in questions %}
+      <div style="margin-bottom: 1rem;">
+        <label><strong>{{ q.text }}</strong></label><br>
+        {% if q.kind == "scale" %}
+          <input type="number" name="q_{{ q.id }}" min="1" max="10" required>
+        {% else %}
+          <textarea name="q_{{ q.id }}" rows="3" cols="60"></textarea>
+        {% endif %}
+      </div>
+    {% endfor %}
+    <button type="submit">Salvesta</button>
+  </form>
+{% endif %}
+{% endblock %}
