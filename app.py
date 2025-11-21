@@ -1,6 +1,7 @@
 import os
 from datetime import date, timedelta
 from functools import wraps
+from pathlib import Path
 
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from flask_sqlalchemy import SQLAlchemy
@@ -11,8 +12,10 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-change-me")
 
 # hoidke sqlite fail hosti kettal (hiljem Dockeris mountime /app/data)
-os.makedirs("data", exist_ok=True)
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///data/checkin.db"
+BASE_DIR = Path(__file__).resolve().parent
+DATA_DIR = BASE_DIR / "data"
+DATA_DIR.mkdir(exist_ok=True)
+app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{DATA_DIR / 'checkin.db'}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
