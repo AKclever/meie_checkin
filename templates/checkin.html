@@ -9,71 +9,56 @@
         {{ week_start }} · {{ user.name }} · võta 5 minutit aususe jaoks ✨
       </p>
     </div>
-    {% if already_done %}
-      <span class="inline-flex items-center rounded-full bg-emerald-500/10 border border-emerald-500/70 px-3 py-1 text-[11px] text-emerald-100">
-        ✔ Selle nädala check-in tehtud
-      </span>
-    {% endif %}
   </div>
 
-  {% if already_done %}
-    <p class="text-sm text-slate-300">
-      Kui midagi olulist lisandus, võite sellest lihtsalt omavahel rääkida – appi ei pea kõike toppima. ❤️
-    </p>
-    <a href="{{ url_for('dashboard') }}"
-       class="inline-flex mt-2 items-center justify-center rounded-full px-4 py-2 text-xs font-medium border border-slate-700 text-slate-200 hover:border-brand-500 hover:text-brand-200 transition">
-      Tagasi ülevaatesse
-    </a>
-  {% else %}
-    <form method="post" class="space-y-4 text-sm">
-      {% for q in questions %}
-        <div class="space-y-1">
-          <label class="block text-xs font-medium text-slate-200">{{ q.text }}</label>
+  <form method="post" class="space-y-4 text-sm">
+    {% for q in questions %}
+      <div class="space-y-1">
+        <label class="block text-xs font-medium text-slate-200">{{ q.text }}</label>
 
-          {% if q.kind == "scale" %}
-            <div class="flex items-center gap-3">
-              <input
-                type="range"
-                name="q_{{ q.id }}"
-                min="1"
-                max="10"
-                value="7"
-                class="w-full accent-brand-500"
-              >
-              <span class="inline-flex w-8 justify-center rounded-md bg-slate-800 border border-slate-700 text-[11px] text-slate-200 scale-value">
-                7
-              </span>
-            </div>
-            <p class="text-[11px] text-slate-500">1 = väga kauge, 10 = väga lähedane</p>
-          {% else %}
-            <textarea
+        {% if q.kind == "scale" %}
+          <div class="flex items-center gap-3">
+            <input
+              type="range"
               name="q_{{ q.id }}"
-              rows="3"
-              class="w-full rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2 text-sm
-                     focus:outline-none focus:ring-1 focus:ring-brand-400 focus:border-brand-400"
-            ></textarea>
-          {% endif %}
-        </div>
-      {% endfor %}
+              min="1"
+              max="10"
+              value="7"
+              class="w-full accent-brand-500"
+            >
+            <span class="inline-flex w-8 justify-center rounded-md bg-slate-800 border border-slate-700 text-[11px] text-slate-200 scale-value">
+              7
+            </span>
+          </div>
+          <p class="text-[11px] text-slate-500">1 = väga kauge, 10 = väga lähedane</p>
+        {% else %}
+          <textarea
+            name="q_{{ q.id }}"
+            rows="3"
+            class="w-full rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2 text-sm
+                   focus:outline-none focus:ring-1 focus:ring-brand-400 focus:border-brand-400"
+          ></textarea>
+        {% endif %}
+      </div>
+    {% endfor %}
 
-      <button
-        type="submit"
-        class="inline-flex items-center justify-center rounded-full bg-brand-500 px-5 py-2 text-xs font-medium text-slate-950 hover:bg-brand-400 transition shadow-lg shadow-brand-500/40"
-      >
-        Salvesta selle nädala tunded
-      </button>
-    </form>
+    <button
+      type="submit"
+      class="inline-flex items-center justify-center rounded-full bg-brand-500 px-5 py-2 text-xs font-medium text-slate-950 hover:bg-brand-400 transition shadow-lg shadow-brand-500/40"
+    >
+      Salvesta selle nädala tunded
+    </button>
+  </form>
 
-    <!-- väike JS, et range value'd näidata (valikuline) -->
-    <script>
-      document.querySelectorAll('input[type="range"]').forEach((slider) => {
-        const wrapper = slider.closest('div');
-        const badge = wrapper.querySelector('.scale-value');
-        const update = () => badge && (badge.textContent = slider.value);
-        slider.addEventListener('input', update);
-        update();
-      });
-    </script>
-  {% endif %}
+  <!-- väike JS, et range value'd näidata (valikuline) -->
+  <script>
+    document.querySelectorAll('input[type="range"]').forEach((slider) => {
+      const wrapper = slider.closest('div');
+      const badge = wrapper.querySelector('.scale-value');
+      const update = () => badge && (badge.textContent = slider.value);
+      slider.addEventListener('input', update);
+      update();
+    });
+  </script>
 </div>
 {% endblock %}

@@ -52,9 +52,6 @@ class CheckIn(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     week_start = db.Column(db.Date, nullable=False)
 
-    # igal kasutajal max 1 check-in nädala kohta
-    __table_args__ = (db.UniqueConstraint("user_id", "week_start", name="uq_checkin_user_week"),)
-
     answers = db.relationship("Answer", backref="checkin", lazy=True, cascade="all, delete-orphan")
 
 
@@ -152,7 +149,6 @@ def logout():
 def checkin():
     user = current_user()
     week_start = get_current_week_start()
-    existing = CheckIn.query.filter_by(user_id=user.id, week_start=week_start).first()
     questions = Question.query.order_by(Question.id.asc()).all()
 
     previous = (
@@ -167,10 +163,6 @@ def checkin():
             prev_answers[a.question_id] = a.value
 
     if request.method == "POST":
-        if existing:
-            flash("Selle nädala check-in on juba tehtud. ❤️", "info")
-            return redirect(url_for("dashboard"))
-
         ch = CheckIn(user_id=user.id, week_start=week_start)
         db.session.add(ch)
         db.session.flush()  # et ch.id olemas oleks
@@ -188,7 +180,6 @@ def checkin():
                            user=user,
                            questions=questions,
                            week_start=week_start,
-                           already_done=bool(existing),
                            prev_answers=prev_answers)
 
 
