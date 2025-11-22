@@ -1,21 +1,48 @@
 {% extends "base.html" %}
-{% block content %}
-<h2>Logi sisse</h2>
-<form method="post">
-  <div>
-    <label>Kasutaja (slug)</label><br>
-    <input name="slug" placeholder="mina või tema" required>
-  </div>
-  <div>
-    <label>Parool</label><br>
-    <input type="password" name="password" required>
-  </div>
-  <button type="submit">Logi sisse</button>
-</form>
 
-<p>Kui tegid <code>flask init-db</code>, siis proovi:</p>
-<ul>
-  <li>Slug: <code>mina</code>, parool: <code>parool2</code></li>
-  <li>Slug: <code>tema</code>, parool: <code>parool1</code></li>
-</ul>
+{% block content %}
+<div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 sm:p-6 space-y-5">
+  <div>
+    <h2 class="text-lg font-semibold">Logi sisse</h2>
+    <p class="text-xs text-slate-400">
+      Kasutaja <span class="font-mono text-slate-300">"mina"</span> või <span class="font-mono text-slate-300">"tema"</span> – ainult teie kahele.
+    </p>
+  </div>
+
+  <form method="post" class="space-y-4 text-sm">
+    <div class="space-y-1">
+      <label class="text-xs font-medium text-slate-300">Kasutaja (slug)</label>
+      <input
+        name="slug"
+        placeholder="mina või tema"
+        required
+        class="w-full rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2 text-sm
+               focus:outline-none focus:ring-1 focus:ring-brand-400 focus:border-brand-400"
+      >
+    </div>
+    <div class="space-y-1">
+      <label class="text-xs font-medium text-slate-300">Parool</label>
+      <input
+        type="password"
+        name="password"
+        required
+        class="w-full rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2 text-sm
+               focus:outline-none focus:ring-1 focus:ring-brand-400 focus:border-brand-400"
+      >
+    </div>
+
+    <div class="flex items-center justify-between pt-1">
+      <p class="text-[11px] text-slate-500">
+        Kui kasutasid <code class="font-mono">flask init-db</code>, proovi:<br>
+        <span class="font-mono text-slate-300">mina / parool2</span> või <span class="font-mono text-slate-300">tema / parool1</span>
+      </p>
+      <button
+        type="submit"
+        class="inline-flex items-center justify-center rounded-full bg-brand-500 px-4 py-2 text-xs font-medium text-slate-950 hover:bg-brand-400 transition shadow-lg shadow-brand-500/40"
+      >
+        Logi sisse
+      </button>
+    </div>
+  </form>
+</div>
 {% endblock %}

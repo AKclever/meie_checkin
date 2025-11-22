@@ -5,41 +5,80 @@
 {% endblock %}
 
 {% block content %}
-<h2>Meie mõlema graafik</h2>
-<canvas id="coupleChart"></canvas>
-<script>
-  const labels = {{ labels | tojson }};
-  const series = {{ series | tojson }};
+<div class="space-y-5">
+  <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 sm:p-6 space-y-3">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+      <div>
+        <h2 class="text-lg font-semibold">Meie mõlema graafik</h2>
+        <p class="text-xs text-slate-400">
+          Esimese skaalaküsimuse põhjal – näed, kuidas teie tajud ajas liiguvad.
+        </p>
+      </div>
+    </div>
+    <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-3">
+      <canvas id="coupleChart" class="w-full h-52"></canvas>
+    </div>
+  </div>
 
-  const datasets = Object.keys(series).map((name, idx) => ({
-    label: name,
-    data: series[name],
-    tension: 0.3
-  }));
+  <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 sm:p-6">
+    <h3 class="text-sm font-semibold mb-3">Nädalad tabelina</h3>
+    <div class="overflow-x-auto text-xs">
+      <table class="min-w-full border-collapse">
+        <thead>
+          <tr class="border-b border-slate-800 text-slate-400">
+            <th class="text-left py-2 pr-3">Nädal</th>
+            {% for name in series.keys() %}
+              <th class="text-left py-2 pr-3">{{ name }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for i, label in enumerate(labels) %}
+            <tr class="border-b border-slate-900 hover:bg-slate-900/70">
+              <td class="py-1.5 pr-3 text-slate-100">{{ label }}</td>
+              {% for name, values in series.items() %}
+                <td class="py-1.5 pr-3 text-slate-300">
+                  {{ values[i] if values[i] is not none else "-" }}
+                </td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
 
-  const ctx = document.getElementById('coupleChart');
-  new Chart(ctx, {
-    type: 'line',
-    data: { labels, datasets },
-    options: { scales: { y: { suggestedMin: 0, suggestedMax: 10 } } }
-  });
-</script>
+  <script>
+    const coupleLabels = {{ labels | tojson }};
+    const series = {{ series | tojson }};
 
-<h3>Ühine tabel</h3>
-<table>
-  <tr>
-    <th>Nädal</th>
-    {% for name in series.keys() %}
-      <th>{{ name }}</th>
-    {% endfor %}
-  </tr>
-  {% for label in labels %}
-    <tr>
-      <td>{{ label }}</td>
-      {% for name, values in series.items() %}
-        <td>{{ values[loop.parentloop.index0] if values[loop.parentloop.index0] is not none else "-" }}</td>
-      {% endfor %}
-    </tr>
-  {% endfor %}
-</table>
+    const colors = ['#0ea5e9', '#f97316', '#22c55e', '#e879f9'];
+
+    const datasets = Object.keys(series).map((name, idx) => ({
+      label: name,
+      data: series[name],
+      tension: 0.3,
+      borderColor: colors[idx % colors.length],
+      backgroundColor: colors[idx % colors.length] + '33',
+      pointRadius: 3,
+      pointHoverRadius: 4,
+    }));
+
+    const ctxCouple = document.getElementById('coupleChart');
+    if (ctxCouple) {
+      new Chart(ctxCouple, {
+        type: 'line',
+        data: { labels: coupleLabels, datasets },
+        options: {
+          scales: {
+            y: {
+              suggestedMin: 0,
+              suggestedMax: 10,
+              ticks: { stepSize: 1 }
+            }
+          }
+        }
+      });
+    }
+  </script>
 {% endblock %}

@@ -5,54 +5,98 @@
 {% endblock %}
 
 {% block content %}
-<h2>Tere, {{ user.name }}</h2>
+<div class="space-y-5">
+  <!-- Ülemine kaart: graafik + streak -->
+  <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 sm:p-6 space-y-4">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div>
+        <h2 class="text-lg font-semibold">Tere, {{ user.name }}</h2>
+        <p class="text-xs text-slate-400">
+          Väike ülevaade, kuidas teie nädalad on kulgenud.
+        </p>
+      </div>
+      {% if streak is defined %}
+        <div class="inline-flex items-center gap-2 rounded-full border border-emerald-500/70 bg-emerald-500/10 px-3 py-1 text-[11px] text-emerald-100">
+          🔥 Streak: <span class="font-semibold">{{ streak }}</span> nädalat järjest
+        </div>
+      {% endif %}
+    </div>
 
-<p>
-  Nädala check-in'i streak:
-  <strong>{{ streak }}</strong> nädalat järjest
-  {% if streak >= 4 %} 🎉{% endif %}
-</p>
+    <div class="mt-2">
+      <h3 class="text-xs font-medium text-slate-300 mb-2">
+        {{ scale_question.text if scale_question else "Skoor ajas" }}
+      </h3>
+      <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-3">
+        <canvas id="scoreChart" class="w-full h-52"></canvas>
+      </div>
+    </div>
 
-<h3>Skoori graafik (esimene skaalaküsimus)</h3>
-<canvas id="scoreChart"></canvas>
-<script>
-  const labels = {{ chart_labels | tojson }};
-  const values = {{ chart_values | tojson }};
+    <script>
+      const labels = {{ chart_labels | tojson }};
+      const values = {{ chart_values | tojson }};
+      const ctx = document.getElementById('scoreChart');
 
-  const ctx = document.getElementById('scoreChart');
-  if (labels.length > 0) {
-    new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: labels,
-        datasets: [{
-          label: '{{ scale_question.text if scale_question else "Skoor" }}',
-          data: values,
-          tension: 0.3
-        }]
-      },
-      options: {
-        scales: { y: { suggestedMin: 0, suggestedMax: 10 } }
+      if (labels.length > 0 && ctx) {
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels,
+            datasets: [{
+              label: 'Skoor',
+              data: values,
+              tension: 0.3,
+              borderColor: '#0ea5e9',
+              backgroundColor: 'rgba(14, 165, 233, 0.15)',
+              pointRadius: 3,
+              pointHoverRadius: 4
+            }]
+          },
+          options: {
+            scales: {
+              y: {
+                suggestedMin: 0,
+                suggestedMax: 10,
+                ticks: { stepSize: 1 }
+              }
+            },
+            plugins: {
+              legend: { display: false }
+            }
+          }
+        });
       }
-    });
-  }
-</script>
+    </script>
+  </div>
 
-<h3>Varasemad nädalad</h3>
-<table>
-  <tr>
-    <th>Nädala algus</th>
-    <th>Vastuste arv</th>
-  </tr>
-  {% for ch in checkins %}
-    <tr>
-      <td>
-        <a href="{{ url_for('week_detail', checkin_id=ch.id) }}">
-          {{ ch.week_start }}
-        </a>
-      </td>
-      <td>{{ ch.answers|length }}</td>
-    </tr>
-  {% endfor %}
-</table>
+  <!-- Alumine kaart: tabel -->
+  <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 sm:p-6">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="text-sm font-semibold">Varasemad nädalad</h3>
+      <p class="text-[11px] text-slate-400">kliki nädalal, et näha detailset vaadet (kui teed sellise route’i)</p>
+    </div>
+    <div class="overflow-x-auto text-xs">
+      <table class="min-w-full border-collapse">
+        <thead>
+          <tr class="border-b border-slate-800 text-slate-400">
+            <th class="text-left py-2 pr-3">Nädala algus</th>
+            <th class="text-left py-2 pr-3">Vastuste arv</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for ch in checkins %}
+            <tr class="border-b border-slate-900 hover:bg-slate-900/70">
+              <td class="py-1.5 pr-3 text-slate-100">{{ ch.week_start }}</td>
+              <td class="py-1.5 pr-3 text-slate-300">{{ ch.answers|length }}</td>
+            </tr>
+          {% endfor %}
+          {% if checkins|length == 0 %}
+            <tr>
+              <td colspan="2" class="py-2 text-slate-400">Esimest check-in’i pole veel tehtud.</td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 {% endblock %}

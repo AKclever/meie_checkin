@@ -1,13 +1,42 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <h2>Tere tulemast!</h2>
-  <p>See saab olema sinu ja su partneri ühine nädalane check-in rakendus. 💑</p>
+<div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 sm:p-6 space-y-4">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-2">
+    <div>
+      <h2 class="text-lg sm:text-xl font-semibold">Tere tulemast 👋</h2>
+      <p class="text-xs text-slate-400">
+        See on teie kahe väike koht, et kord nädalas ausalt sisse vaadata.
+      </p>
+    </div>
+  </div>
 
-  <p>Järgmistes sammudes lisame:</p>
-  <ul>
-    <li>login (teie kahele)</li>
-    <li>nädalase küsimustiku</li>
-    <li>ajaloo ja graafiku</li>
-  </ul>
+  <div class="grid sm:grid-cols-2 gap-4 text-xs text-slate-300">
+    <div class="space-y-2">
+      <h3 class="text-sm font-semibold text-slate-100">Mida see app teeb?</h3>
+      <ul class="space-y-1 list-disc list-inside">
+        <li>iga nädal väike check-in mõlemale</li>
+        <li>lihtne graafik lähedusest ja suhtlusest ajas</li>
+        <li>koht, kuhu jäävad ilusad laused ja tänud</li>
+      </ul>
+    </div>
+    <div class="space-y-2">
+      <h3 class="text-sm font-semibold text-slate-100">Kuidas alustada?</h3>
+      <ol class="space-y-1 list-decimal list-inside">
+        <li>leppige kokku, kes on “mina” ja kes on “tema” 🤝</li>
+        <li>logige mõlemad kord nädalas sisse</li>
+        <li>vastake ausalt ja lühidalt – 5 minutit on piisav</li>
+      </ol>
+    </div>
+  </div>
+
+  {% if not session.user_id %}
+    <div class="flex justify-end mt-2">
+      <a href="{{ url_for('login') }}"
+         class="inline-flex items-center justify-center rounded-full bg-brand-500 px-4 py-2 text-xs font-medium text-slate-950 hover:bg-brand-400 transition shadow-lg shadow-brand-500/40">
+        Alusta check-in’iga
+      </a>
+    </div>
+  {% endif %}
+</div>
 {% endblock %}
