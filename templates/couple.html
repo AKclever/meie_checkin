@@ -24,4 +24,22 @@
     options: { scales: { y: { suggestedMin: 0, suggestedMax: 10 } } }
   });
 </script>
+
+<h3>Ühine tabel</h3>
+<table>
+  <tr>
+    <th>Nädal</th>
+    {% for name in series.keys() %}
+      <th>{{ name }}</th>
+    {% endfor %}
+  </tr>
+  {% for label in labels %}
+    <tr>
+      <td>{{ label }}</td>
+      {% for name, values in series.items() %}
+        <td>{{ values[loop.parentloop.index0] if values[loop.parentloop.index0] is not none else "-" }}</td>
+      {% endfor %}
+    </tr>
+  {% endfor %}
+</table>
 {% endblock %}

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Küsimuste haldus</h2>
+
+<form method="post">
+  <div>
+    <label>Uus küsimus:</label><br>
+    <input type="text" name="text" style="width: 400px" required>
+  </div>
+  <div>
+    <label>Tüüp:</label>
+    <select name="kind">
+      <option value="scale">Skaala (1–10)</option>
+      <option value="text">Tekst</option>
+    </select>
+  </div>
+  <button type="submit">Lisa</button>
+</form>
+
+<h3>Olemasolevad küsimused</h3>
+<ol>
+  {% for q in questions %}
+    <li>{{ q.text }} ({{ q.kind }})</li>
+  {% endfor %}
+</ol>
+{% endblock %}

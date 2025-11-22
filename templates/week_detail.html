@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Nädal {{ checkin.week_start }} – sinu vastused</h2>
+<ul>
+  {% for ans in checkin.answers %}
+    <li>
+      <strong>{{ ans.question.text }}</strong><br>
+      {{ ans.value | e }}
+    </li>
+  {% endfor %}
+</ul>
+<p><a href="{{ url_for('dashboard') }}">Tagasi ülevaatesse</a></p>
+{% endblock %}

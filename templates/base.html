@@ -26,6 +26,9 @@
       <a href="{{ url_for('dashboard') }}">Ülevaade</a>
       <a href="{{ url_for('checkin') }}">Tee check-in</a>
       <a href="{{ url_for('couple') }}">Meie mõlema graafik</a>
+      {% if user and user.slug == 'mina' %}
+        <a href="{{ url_for('admin_questions') }}">Küsimused</a>
+      {% endif %}
       <a href="{{ url_for('logout') }}">Logi välja</a>
     {% else %}
       <a href="{{ url_for('login') }}">Logi sisse</a>
