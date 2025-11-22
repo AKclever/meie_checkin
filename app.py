@@ -3,7 +3,7 @@ from datetime import date, timedelta
 from functools import wraps
 from pathlib import Path
 
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import abort, Flask, render_template, request, redirect, url_for, session, flash
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -88,6 +88,15 @@ def login_required(view):
     return wrapped
 
 
+@app.context_processor
+def inject_user():
+    return {"user": current_user()}
+
+
+def is_admin(user):
+    return user and user.slug == "mina"
+
+
 # --- CLI: DB INIT / SEED ---
 @app.cli.command("init-db")
 def init_db():
@@ -146,6 +155,17 @@ def checkin():
     existing = CheckIn.query.filter_by(user_id=user.id, week_start=week_start).first()
     questions = Question.query.order_by(Question.id.asc()).all()
 
+    previous = (
+        CheckIn.query
+        .filter(CheckIn.user_id == user.id)
+        .order_by(CheckIn.week_start.desc())
+        .first()
+    )
+    prev_answers = {}
+    if previous:
+        for a in previous.answers:
+            prev_answers[a.question_id] = a.value
+
     if request.method == "POST":
         if existing:
             flash("Selle nädala check-in on juba tehtud. ❤️", "info")
@@ -168,7 +188,8 @@ def checkin():
                            user=user,
                            questions=questions,
                            week_start=week_start,
-                           already_done=bool(existing))
+                           already_done=bool(existing),
+                           prev_answers=prev_answers)
 
 
 @app.route("/dashboard")
@@ -179,6 +200,19 @@ def dashboard():
                 .filter_by(user_id=user.id)
                 .order_by(CheckIn.week_start.desc())
                 .all())
+
+    def calculate_streak(checkins):
+        if not checkins:
+            return 0
+        weeks = sorted({c.week_start for c in checkins})
+        streak = 1
+        for i in range(len(weeks) - 1, 0, -1):
+            diff = (weeks[i] - weeks[i - 1]).days
+            if diff == 7:
+                streak += 1
+            else:
+                break
+        return streak
 
     scale_q = Question.query.filter_by(kind="scale").first()
     labels, values = [], []
@@ -192,12 +226,25 @@ def dashboard():
                 except ValueError:
                     values.append(None)
 
+    streak = calculate_streak(checkins)
+
     return render_template("dashboard.html",
                            user=user,
                            checkins=checkins,
                            chart_labels=labels,
                            chart_values=values,
-                           scale_question=scale_q)
+                           scale_question=scale_q,
+                           streak=streak)
+
+
+@app.route("/week/<int:checkin_id>")
+@login_required
+def week_detail(checkin_id):
+    ch = CheckIn.query.get_or_404(checkin_id)
+    user = current_user()
+    if ch.user_id != user.id:
+        abort(403)
+    return render_template("week_detail.html", checkin=ch)
 
 
 # BONUS: kahe kasutaja ühine graafik (esimese skaalaküsimuse järgi)
@@ -226,6 +273,26 @@ def couple():
         series[u.name] = [week_to_val.get(w, None) for w in all_weeks]
 
     return render_template("couple.html", labels=labels, series=series)
+
+
+@app.route("/admin/questions", methods=["GET", "POST"])
+@login_required
+def admin_questions():
+    user = current_user()
+    if not is_admin(user):
+        abort(403)
+
+    if request.method == "POST":
+        text = request.form.get("text", "").strip()
+        kind = request.form.get("kind", "text")
+        if text:
+            db.session.add(Question(text=text, kind=kind))
+            db.session.commit()
+            flash("Küsimus lisatud.", "success")
+        return redirect(url_for("admin_questions"))
+
+    questions = Question.query.order_by(Question.id.asc()).all()
+    return render_template("admin_questions.html", questions=questions)
 
 
 if __name__ == "__main__":

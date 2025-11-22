@@ -7,6 +7,12 @@
 {% block content %}
 <h2>Tere, {{ user.name }}</h2>
 
+<p>
+  Nädala check-in'i streak:
+  <strong>{{ streak }}</strong> nädalat järjest
+  {% if streak >= 4 %} 🎉{% endif %}
+</p>
+
 <h3>Skoori graafik (esimene skaalaküsimus)</h3>
 <canvas id="scoreChart"></canvas>
 <script>
@@ -40,7 +46,11 @@
   </tr>
   {% for ch in checkins %}
     <tr>
-      <td>{{ ch.week_start }}</td>
+      <td>
+        <a href="{{ url_for('week_detail', checkin_id=ch.id) }}">
+          {{ ch.week_start }}
+        </a>
+      </td>
       <td>{{ ch.answers|length }}</td>
     </tr>
   {% endfor %}
