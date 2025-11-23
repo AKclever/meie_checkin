@@ -163,9 +163,14 @@ def checkin():
             prev_answers[a.question_id] = a.value
 
     if request.method == "POST":
-        ch = CheckIn(user_id=user.id, week_start=week_start)
-        db.session.add(ch)
-        db.session.flush()  # et ch.id olemas oleks
+        ch = CheckIn.query.filter_by(user_id=user.id, week_start=week_start).first()
+        if not ch:
+            ch = CheckIn(user_id=user.id, week_start=week_start)
+            db.session.add(ch)
+            db.session.flush()  # et ch.id olemas oleks
+        else:
+            Answer.query.filter_by(checkin_id=ch.id).delete()
+            db.session.flush()
 
         for q in questions:
             raw = request.form.get(f"q_{q.id}", "").strip()
