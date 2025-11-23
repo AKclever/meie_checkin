@@ -197,6 +197,39 @@ def dashboard():
                 .order_by(CheckIn.week_start.desc())
                 .all())
 
+    questions = Question.query.order_by(Question.id.asc()).all()
+    weeks = sorted({c.week_start for c in checkins})
+    labels = [d.strftime("%Y-%m-%d") for d in weeks]
+
+    checkins_by_week = {c.week_start: c for c in checkins}
+
+    question_series = []
+    for q in questions:
+        values = []
+        for week in weeks:
+            ch = checkins_by_week.get(week)
+            ans = next((a for a in ch.answers if a.question_id == q.id), None) if ch else None
+            if not ans:
+                values.append(None)
+                continue
+
+            if q.kind == "scale":
+                try:
+                    values.append(int(ans.value))
+                except ValueError:
+                    values.append(None)
+            else:
+                # Tekstvastuse pikkus (sõnade arv) annab lihtsa statistilise vaate
+                values.append(len(ans.value.split()))
+
+        question_series.append({
+            "id": q.id,
+            "text": q.text,
+            "kind": q.kind,
+            "labels": labels,
+            "values": values,
+        })
+
     def calculate_streak(checkins):
         if not checkins:
             return 0
@@ -210,26 +243,12 @@ def dashboard():
                 break
         return streak
 
-    scale_q = Question.query.filter_by(kind="scale").first()
-    labels, values = [], []
-    if scale_q:
-        for ch in sorted(checkins, key=lambda c: c.week_start):
-            ans = next((a for a in ch.answers if a.question_id == scale_q.id), None)
-            if ans:
-                labels.append(ch.week_start.strftime("%Y-%m-%d"))
-                try:
-                    values.append(int(ans.value))
-                except ValueError:
-                    values.append(None)
-
     streak = calculate_streak(checkins)
 
     return render_template("dashboard.html",
                            user=user,
                            checkins=checkins,
-                           chart_labels=labels,
-                           chart_values=values,
-                           scale_question=scale_q,
+                           question_series=question_series,
                            streak=streak)
 
 
@@ -248,27 +267,40 @@ def week_detail(checkin_id):
 @login_required
 def couple():
     users = User.query.order_by(User.id.asc()).all()
-    scale_q = Question.query.filter_by(kind="scale").first()
-    if not scale_q or len(users) < 2:
-        flash("Kahe kasutaja vaade eeldab vähemalt kahte kasutajat ja üht skaalaküsimust.", "info")
+    questions = Question.query.order_by(Question.id.asc()).all()
+    if not questions or len(users) < 2:
+        flash("Kahe kasutaja vaade eeldab vähemalt kahte kasutajat ja küsimusi.", "info")
         return redirect(url_for("dashboard"))
 
     all_weeks = sorted({ch.week_start for u in users for ch in u.checkins})
     labels = [d.strftime("%Y-%m-%d") for d in all_weeks]
 
-    series = {}
-    for u in users:
-        week_to_val = {}
-        for ch in u.checkins:
-            ans = next((a for a in ch.answers if a.question_id == scale_q.id), None)
-            if ans:
-                try:
-                    week_to_val[ch.week_start] = int(ans.value)
-                except ValueError:
-                    week_to_val[ch.week_start] = None
-        series[u.name] = [week_to_val.get(w, None) for w in all_weeks]
+    question_series = []
+    for q in questions:
+        series = {}
+        for u in users:
+            week_to_val = {}
+            for ch in u.checkins:
+                ans = next((a for a in ch.answers if a.question_id == q.id), None)
+                if ans:
+                    if q.kind == "scale":
+                        try:
+                            week_to_val[ch.week_start] = int(ans.value)
+                        except ValueError:
+                            week_to_val[ch.week_start] = None
+                    else:
+                        week_to_val[ch.week_start] = len(ans.value.split())
+            series[u.name] = [week_to_val.get(w, None) for w in all_weeks]
 
-    return render_template("couple.html", labels=labels, series=series)
+        question_series.append({
+            "id": q.id,
+            "text": q.text,
+            "kind": q.kind,
+            "labels": labels,
+            "series": series,
+        })
+
+    return render_template("couple.html", question_series=question_series)
 
 
 @app.route("/admin/questions", methods=["GET", "POST"])
